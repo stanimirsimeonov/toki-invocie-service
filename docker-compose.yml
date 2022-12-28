@@ -1,0 +1,259 @@
+version: '3.8'
+services:
+  # --------------------------------------------------------------------------------------------------------------------
+  # Fast, flexible NoSQL database service for single-digit millisecond performance at any scale
+  #
+  # LOCAL PORT  : 8000
+  # REMOTE PORT : 28000
+  # --------------------------------------------------------------------------------------------------------------------
+  dynamodb:
+    image: amazon/dynamodb-local
+    container_name: toki-dynamodb-core
+    hostname: dynamodb
+    restart: always
+    user: root
+    volumes:
+      - dynamodb_volume:/home/dynamodblocal/data
+    ports:
+      - "28000:8000"
+    command: "-jar DynamoDBLocal.jar -sharedDb -dbPath /home/dynamodblocal/data/"
+
+
+  # --------------------------------------------------------------------------------------------------------------------
+  # GUI for DynamoDB Local or dynalite
+  #
+  # LOCAL PORT  : 8001
+  # REMOTE PORT : 28001
+  # --------------------------------------------------------------------------------------------------------------------
+  dynamodb-ui:
+    image: aaronshaf/dynamodb-admin
+    restart: always
+    container_name: toki-dynamodb-gui
+    depends_on:
+      - dynamodb
+    environment:
+      DYNAMO_ENDPOINT: http://dynamodb:8000
+    ports:
+      - "28001:8001"
+
+  # --------------------------------------------------------------------------------------------------------------------
+  # The World's Most Advanced Open Source Relational Database
+  #
+  # LOCAL PORT  : 5432
+  # REMOTE PORT : 25432
+  # --------------------------------------------------------------------------------------------------------------------
+  postgresql:
+    image: postgres
+    container_name: toki-postgres
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: toki
+      POSTGRES_HOST_AUTH_METHOD: md5
+      POSTGRES_DB: toki
+      POSTGRES_USER: toki
+    volumes:
+      - postgresql_volume:/var/lib/postgresql/data
+    ports:
+      - "25432:5432"
+  # --------------------------------------------------------------------------------------------------------------------
+  # ZooKeeper is a centralized service for maintaining configuration information, naming, providing distributed
+  # synchronization, and providing group services. All of these kinds of services are used in some form or another by
+  # distributed applications.
+  #
+  # LOCAL PORT  : 2181
+  # REMOTE PORT : 2181
+  # --------------------------------------------------------------------------------------------------------------------
+  zookeeper:
+    restart: always
+    image: confluentinc/cp-zookeeper:latest
+    hostname: zookeeper
+    healthcheck:
+      test: nc -z zookeeper 2181 || exit -1
+      retries: 20
+      interval: 20s
+      start_period: 2s
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+      ZOOKEEPER_SNAPSHOT_TRUST_EMPTY: "true"
+    #      ZOOKEEPER_DATA_DIR: "/var/lib/zookeeper/data"
+    ports:
+      - 2181:2181
+    volumes:
+      - ./data/zookeeper-data:/var/lib/zookeeper/data
+      - ./data/zookeeper-data:/var/lib/zookeeper/logs
+  # --------------------------------------------------------------------------------------------------------------------
+  # Apache Kafka is an open-source distributed event streaming platform used by thousands of companies for
+  # high-performance data pipelines, streaming analytics, data integration, and mission-critical applications.
+  #
+  # LOCAL PORT  : 9092, 29092
+  # REMOTE PORT : 9092, 29092
+  # --------------------------------------------------------------------------------------------------------------------
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    restart: always
+    container_name: toki-kafka
+    hostname: kafka
+    ports:
+      - 9092:9092
+      - 29092:29092
+    healthcheck:
+      test: nc -z localhost 9092 || exit -1
+      start_period: 5s
+      interval: 5s
+      timeout: 10s
+      retries: 10
+    depends_on:
+      zookeeper:
+        condition: service_healthy
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_HOST_NAME: localhost
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,EXTERNAL://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_ZOOKEEPER_SSL_CLIENT_ENABLE: 'true'
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./data/kafka-data:/var/lib/kafka/data
+
+  # --------------------------------------------------------------------------------------------------------------------
+  # It was deployed a KAFKA-UI to make visible what is happening within the cluster
+  # LOCAL PORT  : 8080
+  # REMOTE PORT : 20085
+  # --------------------------------------------------------------------------------------------------------------------
+  kafka-ui:
+    container_name: kafka-ui
+    image: provectuslabs/kafka-ui:latest
+    ports:
+      - 20085:8080
+    depends_on:
+      kafka:
+        condition: service_healthy
+      schema-registry:
+        condition: service_healthy
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+      KAFKA_CLUSTERS_0_METRICS_PORT: 9997
+      KAFKA_CLUSTERS_0_SCHEMAREGISTRY: http://schemaregistry:8081
+
+  # --------------------------------------------------------------------------------------------------------------------
+  # Confluent Schema Registry provides a serving layer for your metadata. It provides a RESTful interface for storing
+  # and retrieving your Avro®, JSON Schema, and Protobuf schemas.
+  #
+  # LOCAL PORT  : 8081
+  # REMOTE PORT : 8081
+  # --------------------------------------------------------------------------------------------------------------------
+  schema-registry:
+    image: confluentinc/cp-schema-registry
+    restart: always
+    hostname: schemaregistry
+    container_name: toki-schema-registry
+    healthcheck:
+      start_period: 20s
+      interval: 5s
+      retries: 20
+      test: curl --fail --silent --insecure http://schema-registry:8081/subjects --output /dev/null || exit 1
+    depends_on:
+      zookeeper:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    ports:
+      - "8081:8081"
+    environment:
+      SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081
+      SCHEMA_REGISTRY_KAFKASTORE_CONNECTION_URL: zookeeper:2181
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: PLAINTEXT://kafka:9092
+      SCHEMA_REGISTRY_HOST_NAME: schemaregistry
+      SCHEMA_REGISTRY_DEBUG: "true"
+
+  # --------------------------------------------------------------------------------------------------------------------
+  # The main service which is used to manage registry schemas through user interface
+  #
+  # LOCAL PORT  : 8000
+  # REMOTE PORT : 20082
+  # --------------------------------------------------------------------------------------------------------------------
+  schema-registry-ui:
+    image: landoop/schema-registry-ui
+    container_name: toki-schema-registry-ui
+    restart: always
+    depends_on:
+      zookeeper:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      schema-registry:
+        condition: service_healthy
+    environment:
+      - SCHEMAREGISTRY_URL=http://schemaregistry:8081/
+      - PROXY="true"
+      - ALLOW_GLOBAL=1
+      - ALLOW_TRANSITIVE=1
+      - ALLOW_DELETION=1
+    ports:
+      - "20082:8000"
+
+  # ------------------------------------------------------------------------------------------------------------------
+  # Minio Service which is used to store files and keep them for further operations
+  #
+  # LOCAL PORT  : 9000, 9090
+  # REMOTE PORT : 20083, 20084
+  # --------------------------------------------------------------------------------------------------------------------
+  minio:
+    image: quay.io/minio/minio:latest
+    container_name: minio-s3-storage
+    depends_on:
+      kafka:
+        condition: service_healthy
+      schema-registry:
+        condition: service_healthy
+    environment:
+      MINIO_ROOT_USER: 'toky-s3-api-key'
+      MINIO_ROOT_PASSWORD: 'toki-s3-api-secret-key'
+      MINIO_NOTIFY_KAFKA_ENABLE_PRIMARY: 'on'
+      MINIO_NOTIFY_KAFKA_BROKERS_PRIMARY: kafka:9092
+      MINIO_NOTIFY_KAFKA_TOPIC_PRIMARY: 'toki-csv-files'
+      MINIO_ACCESS_KEY: "fTowNCUplukhtkO0"
+      MINIO_SECRET_KEY: "PfXYP8achCqOp02s84jsxR3Eb9uuLEwR"
+    command:
+      - server
+      - /data
+      - --console-address
+      - ":9090"
+    ports:
+      - "20083:9000"
+      - "20084:9090"
+    volumes:
+      - minio_volume:/data
+
+  recreate-buckets:
+    image: minio/mc
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+        /usr/bin/mc config host add toki-minio http://minio:9000 fTowNCUplukhtkO0 PfXYP8achCqOp02s84jsxR3Eb9uuLEwR;
+        /usr/bin/mc mb toki-minio/new-files;
+        /usr/bin/mc mb toki-minio/processed-files;
+        /usr/bin/mc mb toki-minio/mistaken-files;
+        /usr/bin/mc policy download toki-minio/new-files;
+        /usr/bin/mc policy download toki-minio/processed-files;
+        /usr/bin/mc policy download toki-minio/mistaken-files;
+        /usr/bin/mc event add toki-minio/new-files arn:minio:sqs::PRIMARY:kafka -p --event "put,get,delete" --suffix .csv;
+        /usr/bin/mc event add toki-minio/processed-files arn:minio:sqs::PRIMARY:kafka -p --event "put,get,delete" --suffix .csv;
+        /usr/bin/mc event add toki-minio/mistaken-files arn:minio:sqs::PRIMARY:kafka -p --event "put,get,delete" --suffix .csv;
+        exit 0;
+      "
+
+volumes:
+  # --------------------------------------------------------------------------------------------------------------------
+  # using Bind named volumes to make sure the db persistance of the data after get down the containers
+  # --------------------------------------------------------------------------------------------------------------------
+  dynamodb_volume:
+  postgresql_volume:
+  minio_volume:
