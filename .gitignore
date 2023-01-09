@@ -1,2 +1,5 @@
 venv/
 .idea
+src/toki_service.egg-info
+src/build
+src/*-data/

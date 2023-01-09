@@ -1,9 +1,5 @@
 from setuptools import setup, find_packages
 
-requires = [
-
-
-]
 
 setup(
     name='toki-service',
@@ -17,7 +13,7 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     zip_safe=False,
-    install_requires=requires,
+    install_requires=[],
     tests_require=[],
     setup_requires=[],
     dependency_links=[],
@@ -27,7 +23,7 @@ setup(
         ],
         'faust.codecs': [
             # 'avro_metering_point_consumption = toki.codecs.avro:avro_metering_point_consumption_codec',
-            'avro_new_csv_file_event = toki.codecs.avro:avro_new_csv_file_event_codec',
+            # 'avro_new_csv_file_event = toki.codecs.avro:avro_new_csv_file_event_codec',
         ],
     },
 )
