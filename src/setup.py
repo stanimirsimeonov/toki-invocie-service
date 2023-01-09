@@ -22,6 +22,7 @@ setup(
             'toki = toki.app:main',
         ],
         'faust.codecs': [
+            'avro_new_csv_file_event = toki.codecs.avro:avro_new_csv_file_event_codec',
         ],
     },
 )
