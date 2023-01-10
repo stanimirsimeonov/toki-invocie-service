@@ -4,5 +4,8 @@ faust-streaming==0.10.1
 python-schema-registry-client[faust]
 simple-settings==1.2.0
 typing-extensions==4.4.0
-boto==2.49.0
+boto3
 aiomonitor==0.4.5
+pandas==1.5.2
+pandas-schema==0.3.6
+

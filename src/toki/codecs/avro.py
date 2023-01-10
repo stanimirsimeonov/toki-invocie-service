@@ -1,19 +1,32 @@
-from schema_registry.client import SchemaRegistryClient, schema
-from schema_registry.serializers.faust import FaustSerializer
-from simple_settings import settings
-import json
-from toki.dto.models import   S3BucketFile
-
-# Initialize Schema Registry Client
-client = SchemaRegistryClient(url=settings.SCHEMA_REGISTRY_URL)
-
-
-# Initialize Schema serializer for upcoming events according to the new files or existing files and their manipulation
-avro_new_csv_file_event_serializer = FaustSerializer(
-    client,
-    "new_csv_file_event",
-    S3BucketFile.avro_schema()
+from toki.codecs.serializers import (
+    avro_mistaken_files_serializer,
+    avro_valid_files_serializer,
+    avro_new_csv_file_event_serializer
 )
 
+
 def avro_new_csv_file_event_codec():
+    """
+    The main avro codec used to translate to DTO the events coming from the MINIO
+    :return FaustSerializer:
+    """
     return avro_new_csv_file_event_serializer
+
+
+def avro_valid_files_event_codec():
+    """
+    The main avro codec used to translate to DTO for transferred events regarding the valid files after their validation
+
+    :return FaustSerializer:
+    """
+    return avro_valid_files_serializer
+
+
+def avro_mistaken_files_event_codec():
+    """
+    The main avro codec used to translate to DTO for transferred events regarding the invalid files after
+    their validation
+
+    :return FaustSerializer:
+    """
+    return avro_mistaken_files_serializer

@@ -23,6 +23,8 @@ setup(
         ],
         'faust.codecs': [
             'avro_new_csv_file_event = toki.codecs.avro:avro_new_csv_file_event_codec',
+            'avro_valid_files_event = toki.codecs.avro:avro_valid_files_event_codec',
+            'avro_mistaken_files_event = toki.codecs.avro:avro_mistaken_files_event_codec',
         ],
     },
 )

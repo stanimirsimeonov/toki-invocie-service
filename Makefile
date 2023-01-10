@@ -13,3 +13,6 @@ down:
 # prune all the docker infrastructure resources
 prune:
 	docker system prune --all --volumes -f
+
+pypi-install:
+	pip3 install -r requirements.txt  --force-reinstall  --ignore-installed --no-cache-dir
