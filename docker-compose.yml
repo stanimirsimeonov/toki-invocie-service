@@ -100,7 +100,7 @@ services:
       - "29092:29092"
     healthcheck:
       test: nc -z localhost 9092 || exit -1
-      start_period: 20s
+      start_period: 60s
       interval: 5s
       timeout: 10s
       retries: 20
@@ -207,6 +207,7 @@ services:
   minio:
     image: quay.io/minio/minio:latest
     container_name: minio-s3-storage
+    restart: always
     depends_on:
       kafka:
         condition: service_healthy
@@ -218,8 +219,6 @@ services:
       MINIO_NOTIFY_KAFKA_ENABLE_PRIMARY: 'on'
       MINIO_NOTIFY_KAFKA_BROKERS_PRIMARY: kafka:9092
       MINIO_NOTIFY_KAFKA_TOPIC_PRIMARY: 'toki-csv-files'
-      MINIO_ACCESS_KEY: "fTowNCUplukhtkO0"
-      MINIO_SECRET_KEY: "PfXYP8achCqOp02s84jsxR3Eb9uuLEwR"
     command:
       - server
       - /data
@@ -233,20 +232,21 @@ services:
 
   recreate-buckets:
     image: minio/mc
-    depends_on:
-      - minio
     entrypoint: >
       /bin/sh -c "
-        /usr/bin/mc config host add toki-minio http://minio:9000 fTowNCUplukhtkO0 PfXYP8achCqOp02s84jsxR3Eb9uuLEwR;
+        /usr/bin/mc config host add toki-minio http://minio:9000 admin Eemi8cah;
         /usr/bin/mc mb toki-minio/new-files;
         /usr/bin/mc mb toki-minio/processed-files;
         /usr/bin/mc mb toki-minio/mistaken-files;
+        /usr/bin/mc mb toki-minio/valid-files;
         /usr/bin/mc policy download toki-minio/new-files;
         /usr/bin/mc policy download toki-minio/processed-files;
         /usr/bin/mc policy download toki-minio/mistaken-files;
+        /usr/bin/mc policy download toki-minio/valid-files;
         /usr/bin/mc event add toki-minio/new-files arn:minio:sqs::PRIMARY:kafka -p --event "put,get,delete" --suffix .csv;
         /usr/bin/mc event add toki-minio/processed-files arn:minio:sqs::PRIMARY:kafka -p --event "put,get,delete" --suffix .csv;
         /usr/bin/mc event add toki-minio/mistaken-files arn:minio:sqs::PRIMARY:kafka -p --event "put,get,delete" --suffix .csv;
+        /usr/bin/mc event add toki-minio/valid-files arn:minio:sqs::PRIMARY:kafka -p --event "put,get,delete" --suffix .csv;
         exit 0;
       "
 

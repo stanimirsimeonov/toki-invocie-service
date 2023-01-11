@@ -16,7 +16,6 @@ async def inform_for_validated_status_of_file(value: List[dict]):
     for file in value:
         send_topic_key = "{bucket}_{file}".format(**file)
         if 'errors' in file:
-            await error_files_topic.send(key=send_topic_key,value=S3CSVInvalidFile.from_data(file))
+            await error_files_topic.send(key=send_topic_key, value_serializer="json", value=file)
         else:
-            await valid_files_topic.send(key=send_topic_key, value=S3CSValidFile.from_data(file))
-
+            await valid_files_topic.send(key=send_topic_key,  value_serializer="json", value=file)

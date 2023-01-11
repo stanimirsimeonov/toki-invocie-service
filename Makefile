@@ -4,8 +4,10 @@ ps:
 
 # run or rerun all the required services within a container
 up:
-	docker-compose up -d --force-recreate
+	docker-compose up -d --force-recreate dynamodb dynamodb-ui postgresql zookeeper kafka kafka-ui schema-registry  schema-registry-ui minio
 
+buckets:
+	docker-compose up recreate-buckets
 # get down all the infrastructure services
 down:
 	docker-compose down

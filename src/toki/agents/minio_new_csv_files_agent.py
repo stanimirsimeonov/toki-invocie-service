@@ -1,7 +1,7 @@
 from toki.app import app
 from toki.topics import new_files_topic
 import pandas as pd
-from toki.minio import minio
+from toki.minio import minio_s3_client
 from toki.postprocessors.sink_inform_for_uploaded_files import inform_for_validated_status_of_file
 from toki.validation.csv_schemas import incoming_csv_validation_schema
 
@@ -23,7 +23,7 @@ async def greet(csv_files):
         ]
 
         for file in files:
-            obj = minio.get_object(Bucket=file.get("bucket"), Key=file.get("file"))
+            obj = minio_s3_client.get_object(Bucket=file.get("bucket"), Key=file.get("file"))
             initial_df = pd.read_csv(obj['Body'], header=0, dtype="string")
             errors = incoming_csv_validation_schema.validate(initial_df)
 

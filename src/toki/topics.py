@@ -12,14 +12,16 @@ new_files_topic = app.topic(
 
 error_files_topic = app.topic(
     'toki-corrupted-files',
-    partitions=1,
+    partitions=8,
+    acks=True,
     value_serializer='json',
     value_type=S3CSVInvalidFile
 )
 
 valid_files_topic = app.topic(
     'toki-valid-files',
-    partitions=1,
+    partitions=8,
+    acks=True,
     value_serializer='json',
     value_type=S3CSValidFile
 )
