@@ -1,6 +1,7 @@
 import datetime
 from toki.dynamodb import dynamod_resource
 from toki.dto.models_validated_files import S3CSValidatedFile
+from toki.app import settings
 
 
 async def write_file_information_to_db(value: S3CSValidatedFile):
@@ -10,7 +11,7 @@ async def write_file_information_to_db(value: S3CSValidatedFile):
     :param S3CSVInvalidFile value:
     :return :
     """
-    table = dynamod_resource.Table('uploaded_files')
+    table = dynamod_resource.Table(settings.VAR_DYNAMODB_TABLE_UPLOADED_FILES.get('TableName'))
     table.put_item(Item={
         'bucket': value.bucket,
         'filename': value.file,
