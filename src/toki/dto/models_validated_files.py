@@ -17,7 +17,7 @@ class S3CSVErrorItem(faust.Record, AvroModel, ABC):
 
 
 @dataclasses.dataclass
-class S3CSVInvalidFile(faust.Record, AvroModel, ABC, serializer='avro_valid_files_event'):
+class S3CSValidatedFile(faust.Record, AvroModel, ABC, serializer='avro_validated_event'):
     """
     The DTO which represent how the transferred object for mistaken file looks like
     """

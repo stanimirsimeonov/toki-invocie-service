@@ -1,7 +1,10 @@
 import faust
-
+import logging
 from simple_settings import settings
 from logging.config import dictConfig
+from toki.dynamodb import dynamod_resource
+
+logger = logging.getLogger(__name__)
 
 app = faust.App(
     version=1,
@@ -16,3 +19,5 @@ app = faust.App(
 
 def main() -> None:
     app.main()
+
+
