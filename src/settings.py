@@ -46,36 +46,30 @@ VAR_DYNAMODB_TABLE_UPLOADED_FILES = {
 VAR_DYNAMODB_TABLE_CONSUMPTION_RATES = {
     'TableName': 'consumption_rates',
     'KeySchema': [
-        {'AttributeName': 'timestamp', 'KeyType': 'HASH'},
-        {'AttributeName': 'date', 'KeyType': 'RANGE'},
+        {'AttributeName': 'asDate', 'KeyType': 'HASH'},
+        {'AttributeName': 'asTime', 'KeyType': 'RANGE'},
     ],
-    'LocalSecondaryIndexes': [
+    'AttributeDefinitions': [
+        {'AttributeName': 'asDate', 'AttributeType': 'S'},
+        {'AttributeName': 'asTime', 'AttributeType': 'S'},
+        {'AttributeName': 'asTimestamp', 'AttributeType': 'N'},
+        {'AttributeName': 'rate', 'AttributeType': 'N'},
+    ],
+    'GlobalSecondaryIndexes': [
         {
-            'IndexName': "IndexDateRange",
+            'IndexName': "IndexTimestampRange",
             'KeySchema': [
-                {'AttributeName': 'timestamp', 'KeyType': 'HASH'},
-                {'AttributeName': 'time', 'KeyType': 'RANGE'},
-            ],
-            'Projection': {
-                'ProjectionType': "ALL"
-            }
-        },
-        {
-            'IndexName': "IndexTimeRange",
-            'KeySchema': [
-                {'AttributeName': 'timestamp', 'KeyType': 'HASH'},
+                {'AttributeName': 'asTimestamp', 'KeyType': 'HASH'},
                 {'AttributeName': 'rate', 'KeyType': 'RANGE'},
             ],
             'Projection': {
                 'ProjectionType': "ALL"
+            },
+            'ProvisionedThroughput': {
+                'ReadCapacityUnits': 100,
+                'WriteCapacityUnits': 100
             }
-        }
-    ],
-    'AttributeDefinitions': [
-        {'AttributeName': 'timestamp', 'AttributeType': 'N'},
-        {'AttributeName': 'rate', 'AttributeType': 'N'},
-        {'AttributeName': 'date', 'AttributeType': 'S'},
-        {'AttributeName': 'time', 'AttributeType': 'S'},
+        },
     ],
     'ProvisionedThroughput': {
         'ReadCapacityUnits': 100,

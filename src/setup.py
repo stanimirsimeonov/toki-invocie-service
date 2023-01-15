@@ -22,8 +22,8 @@ setup(
             'toki = toki.app:main',
         ],
         'faust.codecs': [
-            'avro_new_csv_file_event = toki.codecs.avro:avro_new_csv_file_event_codec',
-            'avro_validated_event = toki.codecs.avro:avro_validated_event_codec',
+            'avro_new_csv_file_event = toki.serialization_codecs.avro:avro_new_csv_file_event_codec',
+            'avro_validated_event = toki.serialization_codecs.avro:avro_validated_event_codec',
         ],
     },
 )

@@ -12,8 +12,10 @@ from toki.helpers.scrapping import build_exchange_rate_urls
 
 async def scrape_exchange_rates(from_date: str):
     """
+    A method which is responsible to download all the price rates for the given period from starting point which
+    comes as argument
 
-    :param from_date:
+    :param str from_date:
     :return:
     """
     datetime_object = datetime.strptime(from_date, '%Y-%m-%d')
@@ -30,10 +32,9 @@ async def scrape_exchange_rates(from_date: str):
 
         records = [
             {
-                # "timestamp": datetime.strftime(key, '%Y-%m-%d %H:%M:%S'),
-                "timestamp": datetime.timestamp(key),
-                "time": datetime.strftime(key, '%H:%M:%S'),
-                "date": datetime.strftime(key, '%Y-%m-%d'),
+                "asTimestamp": datetime.timestamp(key),
+                "asTime": datetime.strftime(key, '%H:%M:%S'),
+                "asDate": datetime.strftime(key, '%Y-%m-%d'),
                 "rate": value
             }
             for i, (key, value) in enumerate(
@@ -51,4 +52,6 @@ async def scrape_exchange_rates(from_date: str):
                     batch.put_item(Item=json.loads(json.dumps(record), parse_float=Decimal))
 
         except Exception as err:
+            # what to be done as custom exception
             logger.error(err)
+            return False

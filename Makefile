@@ -8,6 +8,9 @@ up:
 
 buckets:
 	docker-compose up recreate-buckets
+
+minio-cli:
+	docker-compose run minio-cli
 # get down all the infrastructure services
 down:
 	docker-compose down

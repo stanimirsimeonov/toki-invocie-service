@@ -1,4 +1,4 @@
-from toki.codecs.serializers import (
+from toki.serialization_codecs.serializers import (
     avro_new_csv_file_event_serializer,
     avro_validated_serializer
 )

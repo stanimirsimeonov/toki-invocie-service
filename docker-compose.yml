@@ -239,17 +239,19 @@ services:
         /usr/bin/mc mb toki-minio/processed-files;
         /usr/bin/mc mb toki-minio/mistaken-files;
         /usr/bin/mc mb toki-minio/valid-files;
+        /usr/bin/mc mb toki-minio/pre-invoice-raw-files;
         /usr/bin/mc policy download toki-minio/new-files;
         /usr/bin/mc policy download toki-minio/processed-files;
         /usr/bin/mc policy download toki-minio/mistaken-files;
         /usr/bin/mc policy download toki-minio/valid-files;
+        /usr/bin/mc policy download toki-minio/pre-invoice-raw-files;
         /usr/bin/mc event add toki-minio/new-files arn:minio:sqs::PRIMARY:kafka -p --event "put,get,delete" --suffix .csv;
         /usr/bin/mc event add toki-minio/processed-files arn:minio:sqs::PRIMARY:kafka -p --event "put,get,delete" --suffix .csv;
         /usr/bin/mc event add toki-minio/mistaken-files arn:minio:sqs::PRIMARY:kafka -p --event "put,get,delete" --suffix .csv;
         /usr/bin/mc event add toki-minio/valid-files arn:minio:sqs::PRIMARY:kafka -p --event "put,get,delete" --suffix .csv;
+        /usr/bin/mc event add toki-minio/pre-invoice-raw-files arn:minio:sqs::PRIMARY:kafka -p --event "put,get,delete" --suffix .csv;
         exit 0;
       "
-
 volumes:
   # --------------------------------------------------------------------------------------------------------------------
   # using Bind named volumes to make sure the db persistance of the data after get down the containers

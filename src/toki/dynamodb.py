@@ -1,10 +1,4 @@
 import boto3
-from botocore.exceptions import ClientError
-
-# import urllib3
-# urllib3.disable_warnings()
-
-
 
 clientArgs = {
     'aws_access_key_id': 'a',

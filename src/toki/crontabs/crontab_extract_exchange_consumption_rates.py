@@ -6,7 +6,7 @@ from toki.common.scrapping import scrape_exchange_rates
 @app.crontab('0 1 * * *')
 async def every_day_at_00_01_am():
     """
-    The crontab must be executed once per day  to execute or catchup with all the rates\
+    The crontab must be executed once per day  to execute or catchup with all the rates
 
     :return:
     """

@@ -18,5 +18,4 @@ def create_table(params: dict):
         return table
     except ClientError as ex:
         # must be decided what to be happened here. Using Happy path!
-        print(ex)
         return False
