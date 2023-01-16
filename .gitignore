@@ -1,8 +1,10 @@
 venv/
 .idea
 src/toki_service.egg-info
+toki_service.egg-info
 src/build
 src/*-data/
+*-data/
 src/__pycache__
 # Byte-compiled / optimized / DLL files
 __pycache__/

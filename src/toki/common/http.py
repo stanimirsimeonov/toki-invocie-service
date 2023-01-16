@@ -3,7 +3,6 @@ from aiohttp import ClientSession
 from typing import List
 
 MAX_SIM_CONNS = 50
-LAST_ID = 10 ** 6
 
 
 async def fetch(url, session: ClientSession):
