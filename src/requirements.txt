@@ -8,4 +8,5 @@ boto3
 aiomonitor==0.4.5
 pandas==1.5.2
 pandas-schema==0.3.6
+simplejson
 

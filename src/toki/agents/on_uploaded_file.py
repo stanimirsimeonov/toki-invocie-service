@@ -58,5 +58,6 @@ async def on_uploaded_file(csv_files):
                 for error in errors
             ]
 
-            logger.info(f"[{file}] - Validation: Found {file.__len__()} errors!")
+            logger.info(f"[{file}] - Validation: Found {errors.__len__()} errors!")
+
         yield files

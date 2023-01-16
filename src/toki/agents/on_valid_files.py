@@ -22,7 +22,7 @@ async def on_valid_file(csv_files):
     :return:
     """
     async for event in csv_files.filter(filter_event_valid_moved_files):
-        a: List[S3BucketFile] = event
+
         for s3_batch_files in event.Records:
             bucket = s3_batch_files.s3.bucket.name
             object_name = s3_batch_files.s3.object.key
@@ -68,3 +68,5 @@ async def on_valid_file(csv_files):
                         month=datetime.datetime.now().month,
                         metering_id=metering_id
                     ))
+
+            yield event

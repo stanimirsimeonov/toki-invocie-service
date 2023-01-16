@@ -4,7 +4,7 @@ from toki.minio import minio_s3_resource
 import datetime
 from botocore.exceptions import ClientError
 from toki.postprocessors.sink_save_new_file_data_to_dynamodb import write_file_information_to_db
-
+from toki.helpers.event_filters import filter_event_initial_uploaded_files
 
 @app.agent(validation_files_topic, sink=[write_file_information_to_db])
 async def on_validation_uploaded_file(csv_files):
@@ -40,10 +40,8 @@ async def on_validation_uploaded_file(csv_files):
             )
             minio_s3_resource.Object('new-files', event.file).delete()
             logger.info(f"[on_validation_uploaded_file]: The file moved")
+            yield event
 
         except ClientError as ex:
             logger.error(f"[on_validation_uploaded_file]: The file can't be copied: {ex.response}")
             logger.exception(ex)
-            raise ex
-        finally:
-            yield event

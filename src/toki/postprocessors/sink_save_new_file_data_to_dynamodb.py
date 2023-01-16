@@ -20,3 +20,4 @@ async def write_file_information_to_db(value: S3CSValidatedFile):
         'created_at': str(datetime.datetime.now()),
         'updated_at': None
     })
+    return value

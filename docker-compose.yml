@@ -37,25 +37,6 @@ services:
       - "28001:8001"
 
   # --------------------------------------------------------------------------------------------------------------------
-  # The World's Most Advanced Open Source Relational Database
-  #
-  # LOCAL PORT  : 5432
-  # REMOTE PORT : 25432
-  # --------------------------------------------------------------------------------------------------------------------
-  postgresql:
-    image: postgres
-    container_name: toki-postgres
-    restart: always
-    environment:
-      POSTGRES_PASSWORD: toki
-      POSTGRES_HOST_AUTH_METHOD: md5
-      POSTGRES_DB: toki
-      POSTGRES_USER: toki
-    volumes:
-      - postgresql_volume:/var/lib/postgresql/data
-    ports:
-      - "25432:5432"
-  # --------------------------------------------------------------------------------------------------------------------
   # ZooKeeper is a centralized service for maintaining configuration information, naming, providing distributed
   # synchronization, and providing group services. All of these kinds of services are used in some form or another by
   # distributed applications.
@@ -240,16 +221,19 @@ services:
         /usr/bin/mc mb toki-minio/mistaken-files;
         /usr/bin/mc mb toki-minio/valid-files;
         /usr/bin/mc mb toki-minio/pre-invoice-raw-files;
+        /usr/bin/mc mb toki-minio/invoices;
         /usr/bin/mc policy download toki-minio/new-files;
         /usr/bin/mc policy download toki-minio/processed-files;
         /usr/bin/mc policy download toki-minio/mistaken-files;
         /usr/bin/mc policy download toki-minio/valid-files;
         /usr/bin/mc policy download toki-minio/pre-invoice-raw-files;
+        /usr/bin/mc policy download toki-minio/invoices;
         /usr/bin/mc event add toki-minio/new-files arn:minio:sqs::PRIMARY:kafka -p --event "put,get,delete" --suffix .csv;
         /usr/bin/mc event add toki-minio/processed-files arn:minio:sqs::PRIMARY:kafka -p --event "put,get,delete" --suffix .csv;
         /usr/bin/mc event add toki-minio/mistaken-files arn:minio:sqs::PRIMARY:kafka -p --event "put,get,delete" --suffix .csv;
         /usr/bin/mc event add toki-minio/valid-files arn:minio:sqs::PRIMARY:kafka -p --event "put,get,delete" --suffix .csv;
         /usr/bin/mc event add toki-minio/pre-invoice-raw-files arn:minio:sqs::PRIMARY:kafka -p --event "put,get,delete" --suffix .csv;
+        /usr/bin/mc event add toki-minio/invoices arn:minio:sqs::PRIMARY:kafka -p --event "put,get,delete" --suffix .csv;
         exit 0;
       "
 volumes:
